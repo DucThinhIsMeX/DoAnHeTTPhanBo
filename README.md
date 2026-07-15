@@ -219,42 +219,5 @@ docker stop backend1
 
 ---
 
-## 🛠️ Nhật Ký Khắc Phục Sự Cố Kỹ Thuật (Troubleshooting Guide)
 
-Dưới đây là tổng hợp các lỗi thực tế phát sinh trong quá trình xây dựng hệ thống và giải pháp khắc phục đã được triển khai:
 
-### 🚨 Lỗi 1: Nginx Loop Restarting liên tục khi khởi chạy Docker
-* **Hiện tượng**: Container `nginx-lb` liên tục chuyển đổi trạng thái `restarting` và `exited`. Lệnh `docker logs nginx-lb` báo lỗi: `nginx: [emerg] open() "/etc/nginx/conf.d/upstream.conf" failed`.
-* **Nguyên nhân**: File `nginx.conf` ban đầu sử dụng lệnh `include /etc/nginx/conf.d/upstream.conf;` để tách biệt cấu hình upstream. Tuy nhiên khi deploy bằng Docker Compose, file con này chưa được mount hoặc bị sai đường dẫn dẫn tới lỗi phân tích cú pháp của Nginx.
-* **Khắc phục**: Gộp toàn bộ block cấu hình `upstream backend_servers { ... }` trực tiếp vào file `nginx/nginx.conf` chính, loại bỏ lệnh `include` bên ngoài để đơn giản hóa cấu trúc phân tích trong môi trường container.
-
-### 🚨 Lỗi 2: Grafana hiển thị "No Data" khi Test Tải bằng Locust
-* **Hiện tượng**: Locust báo cáo gửi thành công hàng trăm requests/giây nhưng biểu đồ Grafana hoàn toàn trống rỗng.
-* **Nguyên nhân**: Thiết lập sai mục tiêu **Host** trong giao diện Locust thành `http://localhost:8089` (cổng giao diện của chính Locust) thay vì `http://localhost:80` (Load Balancer). Dẫn tới request bị lỗi vòng lặp và không thực sự tới được backend để kích hoạt tăng giá trị Prometheus Counter.
-* **Khắc phục**: Điền đúng địa chỉ của Nginx Load Balancer (`http://localhost:80` hoặc `http://nginx`) vào trường **Host** trong Locust.
-
-### 🚨 Lỗi 3: Webhook Auto-Heal báo lỗi "Permission Denied" khi gọi Docker API
-* **Hiện tượng**: Script Python nhận được webhook nhưng không thể thực hiện lệnh `docker start`, xuất hiện lỗi: `docker.errors.DockerException: Error while fetching server API version... PermissionError(13, 'Permission denied')`.
-* **Nguyên nhân**: Tiến trình trong container không có đủ đặc quyền truy cập vào Unix socket `/var/run/docker.sock` do thuộc sở hữu của nhóm `docker` ở máy host.
-* **Khắc phục**: Thực thi Webhook trên máy Host để tương tác trực tiếp với CLI Docker của người dùng hiện tại, hoặc cấp quyền bổ sung cho user chạy Docker Container thông qua cấu hình `group_add` trong docker-compose.
-
-### 🚨 Lỗi 4: Alertmanager không gửi được Email (SMTP Auth 535)
-* **Hiện tượng**: Log của Alertmanager ghi nhận lỗi: `Username and Password not accepted`.
-* **Nguyên nhân**: Google đã chặn tính năng đăng nhập bằng mật khẩu thường từ bên thứ 3 (Less Secure Apps) từ năm 2022.
-* **Khắc phục**: Kích hoạt xác thực 2 bước (2FA) trên tài khoản gửi thư, sau đó tạo **Mật khẩu ứng dụng (App Password)** dành riêng cho Alertmanager và dùng mật khẩu 16 ký tự này để thay thế cho mật khẩu thông thường trong file `alertmanager.yml`.
-
----
-
-## 👥 Thành Viên Thực Hiện (Nhóm 5)
-
-Dự án được thực hiện bởi nhóm sinh viên **Trường Đại học Công nghệ Thông tin - ĐHQG TP.HCM (UIT)**:
-
-| MSSV | Họ và Tên | Vai trò trong dự án | Email liên hệ |
-| :--- | :--- | :--- | :--- |
-| **23521250** | Nguyễn Thị Thu Thảo | Xây dựng API FastAPI, tích hợp Prometheus Metrics & Alerting | [23521250@gm.uit.edu.vn](mailto:23521250@gm.uit.edu.vn) |
-| **23521495** | Đỗ Thành Vinh | Cấu hình Nginx Load Balancer & Docker Compose Orchestration | [23521495@gm.uit.edu.vn](mailto:23521495@gm.uit.edu.vn) |
-| **23521480** | Trần Đức Thịnh | Phát triển cơ chế Auto-Healing Webhook & Tự động hóa Docker API | [23521480@gm.uit.edu.vn](mailto:23521480@gm.uit.edu.vn) |
-| **23521271** | Lê Minh Quân | Thiết lập Grafana Dashboard & Thực hiện Load Testing bằng Locust | [23521271@gm.uit.edu.vn](mailto:23521271@gm.uit.edu.vn) |
-
----
-*Chúc các bạn triển khai hệ thống thành công! Nếu gặp bất kỳ vấn đề gì, vui lòng tạo Issue hoặc liên hệ qua email thành viên.*

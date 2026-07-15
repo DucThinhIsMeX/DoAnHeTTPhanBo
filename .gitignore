@@ -6,5 +6,5 @@ App/venv/
 __pycache__/
 *.pyc
 
-# Bỏ qua file cấu hình môi trường ẩn (nếu có)
+# Bỏ qua file cấu hình môi trường ẩn 
 .env
