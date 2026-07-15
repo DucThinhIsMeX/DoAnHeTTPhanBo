@@ -1,4 +1,6 @@
-# Đồ Án Hệ Thống Phân Tán: High Availability Cluster với Tự Động Hóa Giám Sát, Cảnh Báo và Phục Hồi (Auto-Healing)
+# High-Availability Distributed Server Cluster Deployment
+
+## Đồ Án Hệ Thống Phân Tán: Tự Động Hóa Giám Sát, Cảnh Báo và Phục Hồi (Auto-Healing)
 
 <p align="center">
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
